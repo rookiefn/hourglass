@@ -1,0 +1,13 @@
+# 这个仓库是公开的（GitHub Pages 免费版要求公开仓库），
+# 所以内部笔记和临时文件不提交，避免整份发到公网上。
+CONTEXT.md
+todo.md
+tips.txt
+
+# 编辑器/工具产生的目录
+.codebuddy/
+
+# 临时文件
+_dist/
+_*
+*.log

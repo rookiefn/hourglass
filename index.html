@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hourglass</title>
+<meta name="description" content="Hourglass —— 记录你正在等待的那些日子。">
+<meta name="theme-color" content="#F4F5F7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0B0C0E" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon-1024.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Hourglass">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3 H17 L12 12 L17 21 H7 L12 12 Z" fill="currentColor"/></svg>
+    <span class="brand-name">Hourglass</span>
+  </div>
+  <button id="btnSettings" class="icon-btn" type="button" aria-label="设置">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="3.6"/>
+      <path d="M12 3v2.4M12 18.6V21M21 12h-2.4M5.4 12H3M18.4 5.6l-1.7 1.7M7.3 16.7l-1.7 1.7M18.4 18.4l-1.7-1.7M7.3 7.3L5.6 5.6"/>
+    </svg>
+  </button>
+</header>
+
+<main class="main">
+  <p id="storageWarn" class="banner hidden"></p>
+  <div id="list" class="list"></div>
+
+  <section id="empty" class="empty hidden">
+    <svg class="empty-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3 H17 L12 12 L17 21 H7 L12 12 Z" fill="currentColor"/></svg>
+    <h1 class="empty-title">还没有倒计时</h1>
+    <p class="empty-text">添加一个你在等的日子，这里会一直帮你数着。</p>
+    <button id="btnEmptyAdd" class="btn primary" type="button">添加第一个倒计时</button>
+  </section>
+</main>
+
+<button id="btnAdd" class="fab" type="button" aria-label="添加倒计时">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+</button>
+
+<!-- 新建 / 编辑 -->
+<div id="editSheet" class="sheet-wrap hidden">
+  <div class="sheet-backdrop" data-close></div>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="editTitle">
+    <div class="sheet-head">
+      <button class="text-btn" type="button" data-close>取消</button>
+      <h2 id="editTitle" class="sheet-title">新建倒计时</h2>
+      <button id="btnSave" class="text-btn strong" type="button">保存</button>
+    </div>
+    <div class="sheet-body">
+      <label class="field">
+        <span class="field-label">名称</span>
+        <input id="inpTitle" class="input" type="text" maxlength="20" placeholder="例如：期末考试" autocomplete="off">
+      </label>
+      <label class="field">
+        <span class="field-label">目标日期</span>
+        <input id="inpDate" class="input" type="date">
+      </label>
+      <div class="quick-row">
+        <button class="chip" type="button" data-quick="1">明天</button>
+        <button class="chip" type="button" data-quick="7">一周后</button>
+        <button class="chip" type="button" data-quick="30">一个月后</button>
+        <button class="chip" type="button" data-quick="100">100 天后</button>
+      </div>
+      <label class="field">
+        <span class="field-label">备注（可选）</span>
+        <input id="inpNote" class="input" type="text" maxlength="30" placeholder="一句话说明" autocomplete="off">
+      </label>
+      <div class="field">
+        <span class="field-label">颜色</span>
+        <div id="colorRow" class="color-row"></div>
+      </div>
+      <div id="editPreview" class="preview"></div>
+      <div id="orderRow" class="order-row hidden">
+        <button id="btnMoveUp" class="btn ghost small" type="button">上移</button>
+        <button id="btnMoveDown" class="btn ghost small" type="button">下移</button>
+      </div>
+      <div class="sheet-actions">
+        <button id="btnShare" class="btn ghost hidden" type="button">分享给朋友</button>
+        <button id="btnDelete" class="btn danger hidden" type="button">删除</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 设置 -->
+<div id="settingsSheet" class="sheet-wrap hidden">
+  <div class="sheet-backdrop" data-close></div>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+    <div class="sheet-head">
+      <span class="sheet-head-spacer"></span>
+      <h2 id="settingsTitle" class="sheet-title">设置</h2>
+      <button class="text-btn" type="button" data-close>完成</button>
+    </div>
+    <div class="sheet-body">
+      <section class="group">
+        <h3 class="group-title">排序</h3>
+        <p class="group-text">长按任意一张卡片可以上下拖动排序；如果拖着不顺手，点开某一条倒计时，面板里也有「上移 / 下移」可以挪。到期当天的会自动浮到最上面，已经过去的会沉到最下面。</p>
+      </section>
+
+      <section class="group">
+        <h3 class="group-title">分享</h3>
+        <p class="group-text">点开任意一条倒计时，面板里有「分享给朋友」。发出去的链接会带上这条倒计时的名字和日期，朋友点开就能看见，也能一键复制到自己的列表里。</p>
+      </section>
+
+      <section class="group">
+        <h3 class="group-title">备份</h3>
+        <p class="group-text">倒计时只存在这台手机的浏览器里。换手机或者清理浏览器数据之前，先导出一份备份文件。</p>
+        <div class="btn-row">
+          <button id="btnExport" class="btn ghost" type="button">导出备份</button>
+          <button id="btnImport" class="btn ghost" type="button">导入备份</button>
+        </div>
+        <input id="fileImport" class="hidden" type="file" accept=".json,application/json">
+      </section>
+
+      <section class="group">
+        <h3 class="group-title">装到手机上</h3>
+        <p id="installText" class="group-text">iPhone 用 Safari 打开本页，点底部的「分享」，选「添加到主屏幕」，以后就像 App 一样打开。安卓用 Chrome 打开，菜单里选「添加到主屏幕」。</p>
+        <button id="btnInstall" class="btn ghost hidden" type="button">一键添加到主屏幕</button>
+      </section>
+
+      <section class="group">
+        <h3 class="group-title">其他</h3>
+        <div class="btn-row">
+          <button id="btnClear" class="btn danger-ghost" type="button">清空全部数据</button>
+        </div>
+        <p class="group-text small">Hourglass · 数据不上传，全部存在本机</p>
+      </section>
+    </div>
+  </div>
+</div>
+
+<!-- 朋友分享进来的单个倒计时 -->
+<div id="shareView" class="share hidden">
+  <header class="topbar">
+    <span class="share-tag">朋友分享给你的倒计时</span>
+    <button id="btnShareClose" class="text-btn" type="button">关闭</button>
+  </header>
+  <main class="share-main">
+    <div id="shareCard" class="share-card"></div>
+    <div class="share-actions">
+      <button id="btnShareImport" class="btn primary" type="button">复制到我的列表</button>
+      <button id="btnShareMine" class="btn ghost" type="button">返回我的列表</button>
+    </div>
+    <p class="share-hint">这是一份固定的快照：对方后来改了日期或名称，这里不会跟着变。</p>
+  </main>
+</div>
+
+<!-- 确认弹窗 -->
+<div id="confirm" class="sheet-wrap center hidden">
+  <div class="sheet-backdrop" data-close></div>
+  <div class="confirm" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+    <h2 id="confirmTitle" class="confirm-title"></h2>
+    <p id="confirmMsg" class="confirm-msg"></p>
+    <div class="confirm-actions">
+      <button id="confirmCancel" class="btn ghost" type="button">取消</button>
+      <button id="confirmOk" class="btn primary" type="button">确定</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<noscript><p class="noscript">Hourglass 需要开启 JavaScript 才能使用。</p></noscript>
+
+<script src="store.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
